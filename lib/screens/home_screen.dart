@@ -76,13 +76,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _batchReimburse() async {
     if (_selectedIds.isEmpty) return;
 
+    // 排除借支（借支不参与报账）
+    final borrowIds = _expenses.where((e) => e.type == '借支' && _selectedIds.contains(e.id)).toList();
+    final validIds = _selectedIds.where((id) => !borrowIds.any((e) => e.id == id)).toList();
+
+    if (borrowIds.isNotEmpty) {
+      final borrowed = borrowIds.map((e) => '「借支 ¥${e.amount.toStringAsFixed(2)}」').join(', ');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('$borrowed 为借支，不参与报账'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppTheme.warningColor,
+      ));
+      // 从选中列表中移除借支
+      setState(() => _selectedIds.removeAll(borrowIds.map((e) => e.id!)));
+    }
+
+    if (validIds.isEmpty) return;
+
     // 确认对话框
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('确认报账', style: TextStyle(fontWeight: FontWeight.w700)),
-        content: Text('确定将选中的 ${_selectedIds.length} 笔记录标记为已报账？'),
+        content: Text('确定将选中的 ${validIds.length} 笔记录标记为已报账？\n（借支类型不参与报账）'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
           FilledButton(
@@ -94,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
     if (confirm != true) return;
 
-    await DatabaseHelper.instance.batchReimburse(_selectedIds.toList());
+    await DatabaseHelper.instance.batchReimburse(validIds);
     setState(() { _selectMode = false; _selectedIds.clear(); });
     _loadData();
     if (mounted) {
@@ -109,12 +126,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _batchCancelReimburse() async {
     if (_selectedIds.isEmpty) return;
 
+    // 借支独立标记，不参与取消报账
+    final borrowIds = _expenses.where((e) => e.type == '借支' && _selectedIds.contains(e.id)).toList();
+    final validIds = _selectedIds.where((id) => !borrowIds.any((e) => e.id == id)).toList();
+
+    if (borrowIds.isNotEmpty) {
+      final borrowed = borrowIds.map((e) => '「借支 ¥${e.amount.toStringAsFixed(2)}」').join(', ');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('$borrowed 为借支，不参与取消报账'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppTheme.warningColor,
+      ));
+      setState(() => _selectedIds.removeAll(borrowIds.map((e) => e.id!)));
+    }
+
+    if (validIds.isEmpty) return;
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('取消报账', style: TextStyle(fontWeight: FontWeight.w700)),
-        content: Text('确定将选中的 ${_selectedIds.length} 笔记录取消报账状态？'),
+        content: Text('确定将选中的 ${validIds.length} 笔记录取消报账状态？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('返回')),
           FilledButton(
@@ -127,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
     if (confirm != true) return;
 
-    await DatabaseHelper.instance.batchCancelReimburse(_selectedIds.toList());
+    await DatabaseHelper.instance.batchCancelReimburse(validIds);
     setState(() { _selectMode = false; _selectedIds.clear(); });
     _loadData();
     if (mounted) {
@@ -200,25 +233,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
-
   Future<void> _shareFile(String filePath) async {
     try {
-      const channel = MethodChannel('com.coldchain.driver/share');
-      await channel.invokeMethod('shareFile', {'path': filePath});
-    } catch (_) {
-      // Fallback: 复制路径到剪贴板
-      if (mounted) {
-        await Clipboard.setData(ClipboardData(text: filePath));
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('文件已保存到: $filePath\n路径已复制到剪贴板'),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 4),
-          backgroundColor: AppTheme.primaryColor,
-        ));
+      // 复制到外部可访问目录
+      final extDir = await getExternalStorageDirectory();
+      if (extDir != null) {
+        final shareDir = Directory('${extDir.path}/share');
+        if (!await shareDir.exists()) await shareDir.create(recursive: true);
+        final src = File(filePath);
+        final dest = File('${shareDir.path}/${DateTime.now().millisecondsSinceEpoch}_backup.json');
+        await src.copy(dest.path);
+
+        const channel = MethodChannel('com.coldchain.driver/share');
+        await channel.invokeMethod('shareFile', {'path': dest.path});
+        return;
       }
+    } catch (_) {}
+
+    // Fallback
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('文件已生成，请使用"每日账单"功能复制文本分享'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppTheme.primaryColor,
+      ));
     }
   }
-
   Future<void> _importBackup() async {
     final controller = TextEditingController();
     final result = await showDialog<String>(context: context, builder: (ctx) => AlertDialog(

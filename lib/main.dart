@@ -5,6 +5,7 @@ import 'screens/home_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/plates_screen.dart';
 import 'screens/expense_types_screen.dart';
+import 'screens/daily_report_screen.dart';
 import 'widgets/app_logo.dart';
 import 'utils/responsive.dart';
 
@@ -82,6 +83,7 @@ class NiuMaApp extends StatelessWidget {
       routes: {
         '/plates': (context) => const PlatesScreen(),
         '/expense_types': (context) => const ExpenseTypesScreen(),
+        '/daily_report': (context) => const DailyReportScreen(),
       },
     );
   }
@@ -201,6 +203,21 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
             children: [
               _buildNavItem(0, Icons.home_rounded, Icons.home_outlined, '首页'),
               _buildNavItem(1, Icons.bar_chart_rounded, Icons.bar_chart, '统计'),
+              GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/daily_report'),
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.summarize_rounded, color: AppTheme.textSecondary, size: 24),
+                      const SizedBox(height: 2),
+                      Text('日报', style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                    ],
+                  ),
+                ),
+              ),
               GestureDetector(
                 onTap: () => Navigator.pushNamed(context, '/expense_types'),
                 behavior: HitTestBehavior.opaque,
