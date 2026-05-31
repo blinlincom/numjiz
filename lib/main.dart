@@ -144,28 +144,26 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(0, Icons.home_rounded, Icons.home_outlined, '首页'),
-                _buildNavItem(1, Icons.bar_chart_rounded, Icons.bar_chart, '统计'),
-                // 车牌管理入口
-                GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/plates'),
-                  behavior: HitTestBehavior.opaque,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.directions_car_rounded, color: AppTheme.textSecondary, size: 24),
-                        const SizedBox(height: 2),
-                        Text('车牌', style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
-                      ],
-                    ),
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(0, Icons.home_rounded, Icons.home_outlined, '首页'),
+              _buildNavItem(1, Icons.bar_chart_rounded, Icons.bar_chart, '统计'),
+              GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/plates'),
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.directions_car_rounded, color: AppTheme.textSecondary, size: 24),
+                      const SizedBox(height: 2),
+                      Text('车牌', style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
