@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import '../models/expense.dart';
 import '../database/database_helper.dart';
 import '../theme/app_theme.dart';
@@ -191,12 +191,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           FilledButton.icon(
             onPressed: () {
               Navigator.pop(ctx);
-              SharePlus.instance.share(
-                ShareParams(
-                  files: [XFile(file.path)],
-                  text: '牛马记账备份数据',
-                ),
-              );
+              _shareFile(file.path);
             },
             icon: const Icon(Icons.share_rounded, size: 18),
             label: const Text('分享文件'),
@@ -204,6 +199,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
       ),
     );
+  }
+
+  Future<void> _shareFile(String filePath) async {
+    try {
+      const channel = MethodChannel('com.coldchain.driver/share');
+      await channel.invokeMethod('shareFile', {'path': filePath});
+    } catch (_) {
+      // Fallback: 复制路径到剪贴板
+      if (mounted) {
+        await Clipboard.setData(ClipboardData(text: filePath));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('文件已保存到: $filePath\n路径已复制到剪贴板'),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+          backgroundColor: AppTheme.primaryColor,
+        ));
+      }
+    }
   }
 
   Future<void> _importBackup() async {
