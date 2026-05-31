@@ -81,3 +81,4 @@ app.*.map.json
 # APK / ZIP artifacts (built by CI)
 *.apk
 *.zip
+*.part.*
