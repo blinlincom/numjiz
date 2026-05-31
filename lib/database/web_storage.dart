@@ -7,6 +7,7 @@ class WebStorageImpl implements StorageInterface {
   int _nextId = 1;
   List<Expense> _list = [];
   List<String> _plates = [];
+  List<String> _expenseTypes = ['充电费', '过路费', '停车费', '货物买赔', '借支'];
 
   @override
   Future<void> init() async {
@@ -26,6 +27,12 @@ class WebStorageImpl implements StorageInterface {
         _plates = (json.decode(p) as List<dynamic>).cast<String>();
       }
     } catch (_) { _plates = []; }
+    try {
+      final t = html.window.localStorage['expense_types'];
+      if (t != null && t.isNotEmpty) {
+        _expenseTypes = (json.decode(t) as List<dynamic>).cast<String>();
+      }
+    } catch (_) {}
   }
 
   void _save() {
@@ -49,6 +56,23 @@ class WebStorageImpl implements StorageInterface {
     _plates.remove(plate); _savePlates();
   }
 
+  void _saveTypes() {
+    try { html.window.localStorage['expense_types'] = json.encode(_expenseTypes); } catch (_) {}
+  }
+
+  @override
+  Future<List<String>> getExpenseTypes() async => List.from(_expenseTypes);
+
+  @override
+  Future<void> addExpenseType(String type) async {
+    if (!_expenseTypes.contains(type)) { _expenseTypes.add(type); _saveTypes(); }
+  }
+
+  @override
+  Future<void> removeExpenseType(String type) async {
+    _expenseTypes.remove(type); _saveTypes();
+  }
+
   @override
   Future<int> insertExpense(Expense e) async {
     final ne = Expense(id: _nextId, type: e.type, amount: e.amount, note: e.note, date: e.date, location: e.location, imagePath: e.imagePath, reimbursed: e.reimbursed, plateNumber: e.plateNumber);
@@ -69,6 +93,16 @@ class WebStorageImpl implements StorageInterface {
     for (var i = 0; i < _list.length; i++) {
       if (ids.contains(_list[i].id)) {
         _list[i] = _list[i].copyWith(reimbursed: true);
+      }
+    }
+    _save();
+  }
+
+  @override
+  Future<void> batchCancelReimburse(List<int> ids) async {
+    for (var i = 0; i < _list.length; i++) {
+      if (ids.contains(_list[i].id)) {
+        _list[i] = _list[i].copyWith(reimbursed: false);
       }
     }
     _save();

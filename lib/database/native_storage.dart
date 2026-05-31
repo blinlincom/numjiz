@@ -8,8 +8,10 @@ class NativeStorageImpl implements StorageInterface {
   int _nextId = 1;
   List<Expense> _list = [];
   List<String> _plates = [];
+  List<String> _expenseTypes = ['充电费', '过路费', '停车费', '货物买赔', '借支'];
   File? _dataFile;
   File? _platesFile;
+  File? _typesFile;
 
   @override
   Future<void> init() async {
@@ -18,6 +20,7 @@ class NativeStorageImpl implements StorageInterface {
 
     _dataFile = File('$dirPath/cold_chain_expenses.json');
     _platesFile = File('$dirPath/cold_chain_plates.json');
+    _typesFile = File('$dirPath/expense_types.json');
 
     // Load expenses
     try {
@@ -46,6 +49,18 @@ class NativeStorageImpl implements StorageInterface {
     } catch (_) {
       _plates = [];
     }
+
+    // Load expense types
+    try {
+      if (await _typesFile!.exists()) {
+        final t = await _typesFile!.readAsString();
+        if (t.isNotEmpty) {
+          _expenseTypes = (json.decode(t) as List<dynamic>).cast<String>();
+        }
+      }
+    } catch (_) {
+      // keep defaults
+    }
   }
 
   Future<void> _save() async {
@@ -57,6 +72,12 @@ class NativeStorageImpl implements StorageInterface {
   Future<void> _savePlates() async {
     if (_platesFile != null) {
       await _platesFile!.writeAsString(json.encode(_plates));
+    }
+  }
+
+  Future<void> _saveTypes() async {
+    if (_typesFile != null) {
+      await _typesFile!.writeAsString(json.encode(_expenseTypes));
     }
   }
 
@@ -75,6 +96,23 @@ class NativeStorageImpl implements StorageInterface {
   Future<void> removePlate(String p) async {
     _plates.remove(p);
     await _savePlates();
+  }
+
+  @override
+  Future<List<String>> getExpenseTypes() async => List.from(_expenseTypes);
+
+  @override
+  Future<void> addExpenseType(String type) async {
+    if (!_expenseTypes.contains(type)) {
+      _expenseTypes.add(type);
+      await _saveTypes();
+    }
+  }
+
+  @override
+  Future<void> removeExpenseType(String type) async {
+    _expenseTypes.remove(type);
+    await _saveTypes();
   }
 
   @override
@@ -119,6 +157,16 @@ class NativeStorageImpl implements StorageInterface {
     for (var i = 0; i < _list.length; i++) {
       if (ids.contains(_list[i].id)) {
         _list[i] = _list[i].copyWith(reimbursed: true);
+      }
+    }
+    await _save();
+  }
+
+  @override
+  Future<void> batchCancelReimburse(List<int> ids) async {
+    for (var i = 0; i < _list.length; i++) {
+      if (ids.contains(_list[i].id)) {
+        _list[i] = _list[i].copyWith(reimbursed: false);
       }
     }
     await _save();

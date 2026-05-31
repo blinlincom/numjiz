@@ -20,6 +20,7 @@ class AppTheme {
     '过路费': Color(0xFFF97316),
     '停车费': Color(0xFF8B5CF6),
     '货物买赔': Color(0xFFEF4444),
+    '借支': Color(0xFF10B981),
   };
 
   static const Map<String, IconData> expenseIcons = {
@@ -27,6 +28,7 @@ class AppTheme {
     '过路费': Icons.toll_rounded,
     '停车费': Icons.local_parking_rounded,
     '货物买赔': Icons.inventory_2_rounded,
+    '借支': Icons.account_balance_wallet_rounded,
   };
 
   static const LinearGradient primaryGradient = LinearGradient(

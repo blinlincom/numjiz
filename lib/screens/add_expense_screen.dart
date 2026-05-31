@@ -22,9 +22,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   DateTime _selectedDate = DateTime.now();
   String? _selectedPlate;
   List<String> _plates = [];
+  List<String> _types = ['充电费', '过路费', '停车费', '货物买赔', '借支'];
   bool _saving = false;
 
-  final List<String> _types = ['充电费', '过路费', '停车费', '货物买赔'];
   bool get isEditing => widget.expense != null;
 
   @override
@@ -44,8 +44,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   Future<void> _loadPlates() async {
     await DatabaseHelper.ensureInit();
     final plates = await DatabaseHelper.instance.getPlates();
+    final types = await DatabaseHelper.instance.getExpenseTypes();
     setState(() {
       _plates = plates;
+      _types = types;
       // 如果编辑模式下车牌不在列表中，也保留
       if (_selectedPlate != null && _selectedPlate!.isNotEmpty && !_plates.contains(_selectedPlate)) {
         _plates.insert(0, _selectedPlate!);
@@ -53,6 +55,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       // 如果只有一个车牌且不是编辑模式，自动选中
       if (!isEditing && _plates.length == 1 && _selectedPlate == null) {
         _selectedPlate = _plates.first;
+      }
+      // 确保选中的类型在列表中
+      if (!_types.contains(_selectedType) && _types.isNotEmpty) {
+        _selectedType = _types.first;
       }
     });
   }
@@ -116,6 +122,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     final padding = Responsive.horizontalPadding(context);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(isEditing ? '编辑记账' : '记一笔', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20)),
         centerTitle: true,

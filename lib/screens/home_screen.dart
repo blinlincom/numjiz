@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/expense.dart';
 import '../database/database_helper.dart';
 import '../theme/app_theme.dart';
@@ -72,6 +75,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<void> _batchReimburse() async {
     if (_selectedIds.isEmpty) return;
+
+    // 确认对话框
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('确认报账', style: TextStyle(fontWeight: FontWeight.w700)),
+        content: Text('确定将选中的 ${_selectedIds.length} 笔记录标记为已报账？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('确认报账'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
     await DatabaseHelper.instance.batchReimburse(_selectedIds.toList());
     setState(() { _selectMode = false; _selectedIds.clear(); });
     _loadData();
@@ -84,27 +106,104 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> _exportBackup() async {
-    final jsonStr = await DatabaseHelper.instance.exportBackup();
-    if (kIsWeb) {
-      _downloadFileWeb(jsonStr, 'niu_ma_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.json');
-    }
+  Future<void> _batchCancelReimburse() async {
+    if (_selectedIds.isEmpty) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('取消报账', style: TextStyle(fontWeight: FontWeight.w700)),
+        content: Text('确定将选中的 ${_selectedIds.length} 笔记录取消报账状态？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('返回')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.errorColor),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('确认取消'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    await DatabaseHelper.instance.batchCancelReimburse(_selectedIds.toList());
+    setState(() { _selectMode = false; _selectedIds.clear(); });
+    _loadData();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('已导出 ${_expenses.length} 条记录'), behavior: SnackBarBehavior.floating,
+        content: const Text('已取消报账状态'), behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: AppTheme.primaryColor,
+        backgroundColor: AppTheme.warningColor,
       ));
     }
   }
 
-  void _downloadFileWeb(String content, String filename) {
-    // Web 端通过 dart:html 下载，在 build web 时可用
-    try {
-      // ignore: avoid_dynamic_calls
-      final dynamic html = Uri.dataFromString(content, mimeType: 'application/json', encoding: Encoding.getByName('utf-8')!);
-      // 简化：复制到剪贴板提示用户保存
-    } catch (_) {}
+  Future<void> _exportBackup() async {
+    final jsonStr = await DatabaseHelper.instance.exportBackup();
+    final filename = 'niu_ma_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.json';
+
+    if (kIsWeb) {
+      // Web 端暂不支持文件分享
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('已导出 ${_expenses.length} 条记录（Web端请手动复制）'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppTheme.primaryColor,
+        ));
+      }
+      return;
+    }
+
+    // 保存到临时目录
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/$filename');
+    await file.writeAsString(jsonStr);
+
+    if (!mounted) return;
+
+    // 弹出分享/查看对话框
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle_rounded, color: AppTheme.successColor, size: 24),
+            SizedBox(width: 10),
+            Text('导出成功', style: TextStyle(fontWeight: FontWeight.w700)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('已导出 ${_expenses.length} 条记录'),
+            const SizedBox(height: 8),
+            Text('文件: $filename', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('关闭'),
+          ),
+          FilledButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              SharePlus.instance.share(
+                ShareParams(
+                  files: [XFile(file.path)],
+                  text: '牛马记账备份数据',
+                ),
+              );
+            },
+            icon: const Icon(Icons.share_rounded, size: 18),
+            label: const Text('分享文件'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _importBackup() async {
@@ -167,6 +266,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         leading: _selectMode ? IconButton(icon: const Icon(Icons.close), onPressed: _toggleSelectMode) : null,
         actions: _selectMode
             ? [
+                TextButton.icon(
+                  onPressed: _batchCancelReimburse,
+                  icon: const Icon(Icons.undo_rounded, color: AppTheme.warningColor, size: 20),
+                  label: const Text('取消报账', style: TextStyle(color: AppTheme.warningColor, fontWeight: FontWeight.w600, fontSize: 12)),
+                ),
                 TextButton.icon(
                   onPressed: _batchReimburse,
                   icon: const Icon(Icons.check_circle_outline, color: AppTheme.successColor),

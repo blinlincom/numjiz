@@ -29,19 +29,27 @@ class DatabaseHelper {
   Future<void> addPlate(String plate) async => (await _s).addPlate(plate);
   Future<void> removePlate(String plate) async => (await _s).removePlate(plate);
 
+  // ===== 费用类型管理 =====
+  Future<List<String>> getExpenseTypes() async => (await _s).getExpenseTypes();
+  Future<void> addExpenseType(String type) async => (await _s).addExpenseType(type);
+  Future<void> removeExpenseType(String type) async => (await _s).removeExpenseType(type);
+
   // ===== 记账 CRUD =====
   Future<int> insertExpense(Expense e) async => (await _s).insertExpense(e);
   Future<int> updateExpense(Expense e) async => (await _s).updateExpense(e);
   Future<int> deleteExpense(int id) async => (await _s).deleteExpense(id);
 
   Future<void> batchReimburse(List<int> ids) async => (await _s).batchReimburse(ids);
+  Future<void> batchCancelReimburse(List<int> ids) async => (await _s).batchCancelReimburse(ids);
 
   Future<List<Expense>> getExpensesByMonth(DateTime m) async => (await _s).getExpensesByMonth(m);
   Future<List<Expense>> getAllExpenses({int? limit, int? offset}) async => (await _s).getAllExpenses(limit: limit, offset: offset);
 
   Future<Map<String, double>> getMonthlyStats(DateTime m) async {
     final ex = await getExpensesByMonth(m);
-    final s = <String, double>{'充电费': 0, '过路费': 0, '停车费': 0, '货物买赔': 0};
+    final types = await getExpenseTypes();
+    final s = <String, double>{};
+    for (var t in types) { s[t] = 0; }
     for (var e in ex) { s[e.type] = (s[e.type] ?? 0) + e.amount; }
     return s;
   }

@@ -1,14 +1,72 @@
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
+import 'database/database_helper.dart';
 import 'screens/home_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/plates_screen.dart';
+import 'screens/expense_types_screen.dart';
 import 'widgets/app_logo.dart';
 import 'utils/responsive.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const NiuMaApp());
+}
+
+/// 启动页 - 初始化数据库期间显示品牌 Logo，避免白屏
+class SplashPage extends StatefulWidget {
+  const SplashPage({super.key});
+  @override
+  State<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<SplashPage> {
+  @override
+  void initState() {
+    super.initState();
+    _init();
+  }
+
+  Future<void> _init() async {
+    await DatabaseHelper.ensureInit();
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const MainPage(),
+          transitionsBuilder: (_, anim, __, child) => FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppTheme.headerGradient,
+        ),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const AppLogo(size: 100, rounded: true),
+              const SizedBox(height: 24),
+              const Text('牛马记账', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: 1)),
+              const SizedBox(height: 8),
+              Text('司机费用管理', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14)),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: 24, height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white.withValues(alpha: 0.8)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class NiuMaApp extends StatelessWidget {
@@ -20,9 +78,10 @@ class NiuMaApp extends StatelessWidget {
       title: '牛马记账',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const MainPage(),
+      home: const SplashPage(),
       routes: {
         '/plates': (context) => const PlatesScreen(),
+        '/expense_types': (context) => const ExpenseTypesScreen(),
       },
     );
   }
@@ -143,10 +202,25 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
               _buildNavItem(0, Icons.home_rounded, Icons.home_outlined, '首页'),
               _buildNavItem(1, Icons.bar_chart_rounded, Icons.bar_chart, '统计'),
               GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/expense_types'),
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.category_rounded, color: AppTheme.textSecondary, size: 24),
+                      const SizedBox(height: 2),
+                      Text('分类', style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                    ],
+                  ),
+                ),
+              ),
+              GestureDetector(
                 onTap: () => Navigator.pushNamed(context, '/plates'),
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
