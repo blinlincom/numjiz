@@ -3,6 +3,7 @@ import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/plates_screen.dart';
+import 'widgets/app_logo.dart';
 import 'utils/responsive.dart';
 
 void main() {
@@ -79,14 +80,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 child: Column(
                   children: [
-                    Container(
-                      width: 48, height: 48,
-                      decoration: BoxDecoration(
-                        gradient: AppTheme.headerGradient,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Icon(Icons.ac_unit, color: Colors.white, size: 26),
-                    ),
+                    const AppLogo(size: 48),
                     const SizedBox(height: 8),
                     const Text('牛马记账', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
                   ],

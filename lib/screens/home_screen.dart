@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../models/expense.dart';
 import '../database/database_helper.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_logo.dart';
 import '../widgets/expense_card.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/pie_chart_widget.dart';
@@ -158,11 +159,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         title: _selectMode
             ? Text('已选 ${_selectedIds.length} 项', style: const TextStyle(fontWeight: FontWeight.w700))
             : Row(mainAxisSize: MainAxisSize.min, children: [
-                Container(
-                  width: 32, height: 32,
-                  decoration: BoxDecoration(gradient: AppTheme.primaryGradient, borderRadius: BorderRadius.circular(8)),
-                  child: const Icon(Icons.local_shipping_rounded, color: Colors.white, size: 18),
-                ),
+                const AppLogo(size: 32, rounded: true),
                 const SizedBox(width: 10),
                 const Text('牛马记账', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20)),
               ]),
