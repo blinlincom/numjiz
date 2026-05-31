@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/expense.dart';
 import '../database/database_helper.dart';
@@ -345,11 +346,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     if (v == 'select') _toggleSelectMode();
                     if (v == 'export') _exportBackup();
                     if (v == 'import') _importBackup();
+                    if (v == 'settings') _showSettings();
                   },
                   itemBuilder: (_) => [
                     const PopupMenuItem(value: 'select', child: Row(children: [Icon(Icons.checklist_rounded, size: 20), SizedBox(width: 10), Text('批量报账')])),
                     const PopupMenuItem(value: 'export', child: Row(children: [Icon(Icons.upload_rounded, size: 20), SizedBox(width: 10), Text('导出备份')])),
                     const PopupMenuItem(value: 'import', child: Row(children: [Icon(Icons.download_rounded, size: 20), SizedBox(width: 10), Text('导入备份')])),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(value: 'settings', child: Row(children: [Icon(Icons.settings_rounded, size: 20), SizedBox(width: 10), Text('设置')])),
                   ],
                 ),
                 const SizedBox(width: 4),
@@ -514,6 +518,55 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             Text('¥${expense.amount.toStringAsFixed(2)}', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: color)),
           ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showSettings() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+              ),
+              const SizedBox(height: 20),
+              const AppLogo(size: 56, rounded: true),
+              const SizedBox(height: 12),
+              const Text('牛马记账', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+              const SizedBox(height: 4),
+              const Text('司机费用管理', style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.info_outline, size: 16, color: AppTheme.primaryColor),
+                  const SizedBox(width: 6),
+                  Text('版本 ${info.version} (build ${info.buildNumber})', style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary, fontWeight: FontWeight.w500)),
+                ],
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('关闭'),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );

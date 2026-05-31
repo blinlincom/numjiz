@@ -6,7 +6,6 @@ import 'screens/stats_screen.dart';
 import 'screens/plates_screen.dart';
 import 'screens/expense_types_screen.dart';
 import 'screens/daily_report_screen.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'widgets/app_logo.dart';
 import 'utils/responsive.dart';
 
@@ -100,22 +99,11 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late final PageController _pageController;
-  String _version = '';
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
-    _loadVersion();
-  }
-
-  Future<void> _loadVersion() async {
-    final info = await PackageInfo.fromPlatform();
-    if (mounted) {
-      setState(() {
-        _version = 'v${info.version} (${info.buildNumber})';
-      });
-    }
   }
 
   @override
@@ -264,17 +252,9 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                     ),
                   ),
                 ],
-              ),
+              ],
             ),
-            // 版本号
-            if (_version.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
-                  _version,
-                  style: TextStyle(fontSize: 10, color: AppTheme.textSecondary.withValues(alpha: 0.5)),
-                ),
-              ),
+            // 版本号已移至首页菜单 → 设置
           ],
         ),
       ),
