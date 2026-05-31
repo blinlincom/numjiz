@@ -1,0 +1,105 @@
+import 'dart:convert';
+import 'dart:html' as html;
+import '../models/expense.dart';
+import 'storage_interface.dart';
+
+class WebStorageImpl implements StorageInterface {
+  int _nextId = 1;
+  List<Expense> _list = [];
+  List<String> _plates = [];
+
+  @override
+  Future<void> init() async {
+    try {
+      final s = html.window.localStorage['cold_chain_expenses'];
+      if (s != null && s.isNotEmpty) {
+        final l = json.decode(s) as List<dynamic>;
+        _list = l.map((e) => Expense.fromMap(e as Map<String, dynamic>)).toList();
+        if (_list.isNotEmpty) {
+          _nextId = _list.map((e) => e.id ?? 0).reduce((a, b) => a > b ? a : b) + 1;
+        }
+      }
+    } catch (_) { _list = []; }
+    try {
+      final p = html.window.localStorage['cold_chain_plates'];
+      if (p != null && p.isNotEmpty) {
+        _plates = (json.decode(p) as List<dynamic>).cast<String>();
+      }
+    } catch (_) { _plates = []; }
+  }
+
+  void _save() {
+    try { html.window.localStorage['cold_chain_expenses'] = json.encode(_list.map((e) => e.toMap()).toList()); } catch (_) {}
+  }
+
+  void _savePlates() {
+    try { html.window.localStorage['cold_chain_plates'] = json.encode(_plates); } catch (_) {}
+  }
+
+  @override
+  Future<List<String>> getPlates() async => List.from(_plates);
+
+  @override
+  Future<void> addPlate(String plate) async {
+    if (!_plates.contains(plate)) { _plates.add(plate); _savePlates(); }
+  }
+
+  @override
+  Future<void> removePlate(String plate) async {
+    _plates.remove(plate); _savePlates();
+  }
+
+  @override
+  Future<int> insertExpense(Expense e) async {
+    final ne = Expense(id: _nextId, type: e.type, amount: e.amount, note: e.note, date: e.date, location: e.location, imagePath: e.imagePath, reimbursed: e.reimbursed, plateNumber: e.plateNumber);
+    _nextId++; _list.add(ne); _save(); return ne.id!;
+  }
+
+  @override
+  Future<int> updateExpense(Expense e) async {
+    final i = _list.indexWhere((x) => x.id == e.id);
+    if (i != -1) { _list[i] = e; _save(); return 1; } return 0;
+  }
+
+  @override
+  Future<int> deleteExpense(int id) async { _list.removeWhere((x) => x.id == id); _save(); return 1; }
+
+  @override
+  Future<void> batchReimburse(List<int> ids) async {
+    for (var i = 0; i < _list.length; i++) {
+      if (ids.contains(_list[i].id)) {
+        _list[i] = _list[i].copyWith(reimbursed: true);
+      }
+    }
+    _save();
+  }
+
+  @override
+  Future<List<Expense>> getExpensesByMonth(DateTime m) async {
+    return _list.where((x) => x.date.year == m.year && x.date.month == m.month).toList()..sort((a, b) => b.date.compareTo(a.date));
+  }
+
+  @override
+  Future<List<Expense>> getAllExpenses({int? limit, int? offset}) async {
+    final s = List<Expense>.from(_list)..sort((a, b) => b.date.compareTo(a.date));
+    final st = offset ?? 0; final ed = limit != null ? (st + limit).clamp(0, s.length) : s.length;
+    return s.sublist(st, ed);
+  }
+
+  @override
+  String exportJson() => json.encode(_list.map((e) => e.toMap()).toList());
+
+  @override
+  Future<int> importJson(String jsonStr) async {
+    final l = json.decode(jsonStr) as List<dynamic>;
+    final imported = l.map((e) => Expense.fromMap(e as Map<String, dynamic>)).toList();
+    for (var e in imported) {
+      final ne = Expense(id: _nextId, type: e.type, amount: e.amount, note: e.note, date: e.date, location: e.location, imagePath: e.imagePath, reimbursed: e.reimbursed, plateNumber: e.plateNumber);
+      _nextId++; _list.add(ne);
+    }
+    _save();
+    return imported.length;
+  }
+}
+
+StorageInterface createStorage() => WebStorageImpl();
