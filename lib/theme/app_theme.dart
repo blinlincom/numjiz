@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // 现代深蓝紫配色
@@ -44,6 +43,16 @@ class AppTheme {
   );
 
   static ThemeData get lightTheme {
+    final baseTextTheme = Typography.material2021(
+      platform: TargetPlatform.android,
+      colorScheme: const ColorScheme.light(
+        primary: primaryColor,
+        secondary: secondaryColor,
+        surface: surfaceColor,
+        error: errorColor,
+      ),
+    );
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
@@ -55,20 +64,20 @@ class AppTheme {
         surface: surfaceColor,
         error: errorColor,
       ),
-      textTheme: GoogleFonts.interTextTheme().copyWith(
-        headlineLarge: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w700, color: textPrimary),
-        headlineMedium: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w600, color: textPrimary),
-        titleLarge: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: textPrimary),
-        titleMedium: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w500, color: textPrimary),
-        bodyLarge: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w400, color: textPrimary),
-        bodyMedium: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w400, color: textSecondary),
-        labelLarge: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+      textTheme: baseTextTheme.black.copyWith(
+        headlineLarge: baseTextTheme.black.headlineLarge?.copyWith(fontSize: 28, fontWeight: FontWeight.w700, color: textPrimary, fontFamily: null),
+        headlineMedium: baseTextTheme.black.headlineMedium?.copyWith(fontSize: 22, fontWeight: FontWeight.w600, color: textPrimary, fontFamily: null),
+        titleLarge: baseTextTheme.black.titleLarge?.copyWith(fontSize: 18, fontWeight: FontWeight.w600, color: textPrimary, fontFamily: null),
+        titleMedium: baseTextTheme.black.titleMedium?.copyWith(fontSize: 16, fontWeight: FontWeight.w500, color: textPrimary, fontFamily: null),
+        bodyLarge: baseTextTheme.black.bodyLarge?.copyWith(fontSize: 16, fontWeight: FontWeight.w400, color: textPrimary, fontFamily: null),
+        bodyMedium: baseTextTheme.black.bodyMedium?.copyWith(fontSize: 14, fontWeight: FontWeight.w400, color: textSecondary, fontFamily: null),
+        labelLarge: baseTextTheme.black.labelLarge?.copyWith(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white, fontFamily: null),
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: backgroundColor,
         elevation: 0,
         scrolledUnderElevation: 1,
-        titleTextStyle: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: textPrimary),
+        titleTextStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: textPrimary),
         iconTheme: const IconThemeData(color: textPrimary),
       ),
       cardTheme: CardThemeData(
@@ -83,7 +92,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          textStyle: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -100,7 +109,7 @@ class AppTheme {
         elevation: 6,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         extendedPadding: const EdgeInsets.symmetric(horizontal: 24),
-        extendedTextStyle: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, letterSpacing: 0.3),
+        extendedTextStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, letterSpacing: 0.3),
       ),
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith((states) {

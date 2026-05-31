@@ -11,7 +11,6 @@ dependencies:
     sdk: flutter
   intl: any
   fl_chart: any
-  google_fonts: any
 
 dev_dependencies:
   flutter_test:
