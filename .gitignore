@@ -77,3 +77,7 @@ app.*.map.json
 /sed*
 /tmp/
 *.salive
+
+# APK / ZIP artifacts (built by CI)
+*.apk
+*.zip

@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _exportBackup() async {
     final jsonStr = await DatabaseHelper.instance.exportBackup();
     if (kIsWeb) {
-      _downloadFileWeb(jsonStr, 'cold_chain_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.json');
+      _downloadFileWeb(jsonStr, 'niu_ma_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.json');
     }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -164,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   child: const Icon(Icons.local_shipping_rounded, color: Colors.white, size: 18),
                 ),
                 const SizedBox(width: 10),
-                const Text('冷链记账', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20)),
+                const Text('牛马记账', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20)),
               ]),
         centerTitle: !isDesktop,
         leading: _selectMode ? IconButton(icon: const Icon(Icons.close), onPressed: _toggleSelectMode) : null,
@@ -354,7 +354,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
             child: const Row(mainAxisSize: MainAxisSize.min, children: [
               Icon(Icons.local_shipping_rounded, color: Colors.white70, size: 14), SizedBox(width: 4),
-              Text('冷链司机', style: TextStyle(color: Colors.white70, fontSize: 11)),
+              Text('牛马司机', style: TextStyle(color: Colors.white70, fontSize: 11)),
             ]),
           ),
         ]),

@@ -1,5 +1,5 @@
-name: cold_chain_driver
-description: 冷链司机记账App - 充电费、过路费、停车费、货物买赔管理
+name: niu_ma_jizhang
+description: 牛马记账App - 充电费、过路费、停车费、货物买赔管理
 publish_to: 'none'
 version: 1.0.0+1
 

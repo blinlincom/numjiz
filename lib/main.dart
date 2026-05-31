@@ -7,16 +7,16 @@ import 'utils/responsive.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ColdChainApp());
+  runApp(const NiuMaApp());
 }
 
-class ColdChainApp extends StatelessWidget {
-  const ColdChainApp({super.key});
+class NiuMaApp extends StatelessWidget {
+  const NiuMaApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '冷链司机记账',
+      title: '牛马记账',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: const MainPage(),
@@ -88,7 +88,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                       child: const Icon(Icons.ac_unit, color: Colors.white, size: 26),
                     ),
                     const SizedBox(height: 8),
-                    const Text('冷链记账', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                    const Text('牛马记账', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
                   ],
                 ),
               ),
