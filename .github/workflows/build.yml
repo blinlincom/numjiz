@@ -5,9 +5,6 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,7 +13,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.0'
+          channel: stable
 
       - run: flutter pub get
 
