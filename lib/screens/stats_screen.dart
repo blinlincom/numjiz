@@ -110,7 +110,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
       tween: Tween(begin: 0, end: 1),
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeOutBack,
-      builder: (_, v, child) => Transform.scale(scale: 0.9 + 0.1 * v, child: Opacity(opacity: v, child: child)),
+      builder: (_, v, child) => Transform.scale(scale: 0.9 + 0.1 * v.clamp(0.0, 1.0), child: Opacity(opacity: v.clamp(0.0, 1.0), child: child)),
       child: Container(
         padding: const EdgeInsets.all(28),
         decoration: BoxDecoration(
@@ -151,7 +151,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
       tween: Tween(begin: 0, end: 1),
       duration: const Duration(milliseconds: 600),
       curve: Curves.easeOut,
-      builder: (_, v, child) => Transform.translate(offset: Offset(0, 30 * (1 - v)), child: Opacity(opacity: v, child: child)),
+      builder: (_, v, child) => Transform.translate(offset: Offset(0, 30 * (1 - v.clamp(0.0, 1.0))), child: Opacity(opacity: v.clamp(0.0, 1.0), child: child)),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -227,7 +227,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
       tween: Tween(begin: 0, end: 1),
       duration: const Duration(milliseconds: 700),
       curve: Curves.easeOut,
-      builder: (_, v, child) => Transform.translate(offset: Offset(0, 30 * (1 - v)), child: Opacity(opacity: v, child: child)),
+      builder: (_, v, child) => Transform.translate(offset: Offset(0, 30 * (1 - v.clamp(0.0, 1.0))), child: Opacity(opacity: v.clamp(0.0, 1.0), child: child)),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(

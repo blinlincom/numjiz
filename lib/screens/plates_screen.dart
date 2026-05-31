@@ -28,28 +28,67 @@ class _PlatesScreenState extends State<PlatesScreen> {
 
   Future<void> _addPlate() async {
     final controller = TextEditingController();
+    String? errorText;
     final result = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('添加车牌', style: TextStyle(fontWeight: FontWeight.w700)),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.characters,
-          decoration: InputDecoration(
-            hintText: '例如：京A12345',
-            prefixIcon: const Icon(Icons.directions_car_rounded),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('添加车牌', style: TextStyle(fontWeight: FontWeight.w700)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: controller,
+                autofocus: true,
+                textCapitalization: TextCapitalization.characters,
+                decoration: InputDecoration(
+                  hintText: '例如：京A12345',
+                  prefixIcon: const Icon(Icons.directions_car_rounded),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  errorText: errorText,
+                ),
+                onChanged: (_) {
+                  if (errorText != null) setDialogState(() => errorText = null);
+                },
+              ),
+            ],
           ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+            FilledButton(
+              onPressed: () {
+                final text = controller.text.trim();
+                if (text.isEmpty) {
+                  setDialogState(() => errorText = '请输入车牌号');
+                  return;
+                }
+                if (text.length < 7 || text.length > 8) {
+                  setDialogState(() => errorText = '车牌号长度应为7-8位');
+                  return;
+                }
+                // 简单校验：首字符为汉字，第二位为字母
+                final firstChar = text.characters.first;
+                final provinces = '京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤川青藏琼宁';
+                if (!provinces.contains(firstChar)) {
+                  setDialogState(() => errorText = '首位应为省份简称（如京、沪、粤）');
+                  return;
+                }
+                final secondChar = text.length > 1 ? text[text.characters.first.length] : '';
+                if (!RegExp(r'^[A-Z]$').hasMatch(secondChar)) {
+                  setDialogState(() => errorText = '第二位应为大写字母');
+                  return;
+                }
+                if (_plates.contains(text)) {
+                  setDialogState(() => errorText = '该车牌已存在');
+                  return;
+                }
+                Navigator.pop(ctx, text);
+              },
+              child: const Text('添加'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('添加'),
-          ),
-        ],
       ),
     );
     if (result != null && result.isNotEmpty) {

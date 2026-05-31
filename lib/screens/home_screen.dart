@@ -220,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   tween: Tween(begin: 0, end: 1),
                                   duration: Duration(milliseconds: 400 + entry.key * 100),
                                   curve: Curves.easeOutBack,
-                                  builder: (_, v, child) => Transform.scale(scale: v, child: Opacity(opacity: v, child: child)),
+                                  builder: (_, v, child) => Transform.scale(scale: v.clamp(0.0, 1.0), child: Opacity(opacity: v.clamp(0.0, 1.0), child: child)),
                                   child: StatCard(title: entry.value.key, amount: entry.value.value, type: entry.value.key),
                                 );
                               }).toList(),
@@ -254,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 tween: Tween(begin: 0, end: 1),
                                 duration: Duration(milliseconds: 300 + index * 50),
                                 curve: Curves.easeOut,
-                                builder: (_, v, child) => Transform.translate(offset: Offset(0, 20 * (1 - v)), child: Opacity(opacity: v, child: child)),
+                                builder: (_, v, child) => Transform.translate(offset: Offset(0, 20 * (1 - v.clamp(0.0, 1.0))), child: Opacity(opacity: v.clamp(0.0, 1.0), child: child)),
                                 child: _selectMode
                                     ? _buildSelectableCard(expense)
                                     : ExpenseCard(expense: expense, onTap: () => _navigateToAdd(expense: expense), onDelete: () => _deleteExpense(expense.id!)),
