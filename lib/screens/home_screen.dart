@@ -353,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     const PopupMenuItem(value: 'export', child: Row(children: [Icon(Icons.upload_rounded, size: 20), SizedBox(width: 10), Text('导出备份')])),
                     const PopupMenuItem(value: 'import', child: Row(children: [Icon(Icons.download_rounded, size: 20), SizedBox(width: 10), Text('导入备份')])),
                     const PopupMenuDivider(),
-                    const PopupMenuItem(value: 'settings', child: Row(children: [Icon(Icons.settings_rounded, size: 20), SizedBox(width: 10), Text('设置')])),
+                    const PopupMenuItem(value: 'settings', child: Row(children: [Icon(Icons.info_outline_rounded, size: 20), SizedBox(width: 10), Text('关于')])),
                   ],
                 ),
                 const SizedBox(width: 4),
@@ -561,7 +561,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('关闭'),
+                  child: const Text('检查更新'),
                 ),
               ),
               const SizedBox(height: 8),
