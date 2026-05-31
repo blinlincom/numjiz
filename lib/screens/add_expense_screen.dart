@@ -82,21 +82,32 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
 
-    final expense = Expense(
-      id: widget.expense?.id, type: _selectedType,
-      amount: double.parse(_amountController.text),
-      note: _noteController.text, date: _selectedDate,
-      location: _locationController.text,
-      plateNumber: _selectedPlate,
-    );
+    try {
+      final expense = Expense(
+        id: widget.expense?.id, type: _selectedType,
+        amount: double.parse(_amountController.text),
+        note: _noteController.text, date: _selectedDate,
+        location: _locationController.text,
+        plateNumber: _selectedPlate,
+      );
 
-    if (isEditing) {
-      await DatabaseHelper.instance.updateExpense(expense);
-    } else {
-      await DatabaseHelper.instance.insertExpense(expense);
+      if (isEditing) {
+        await DatabaseHelper.instance.updateExpense(expense);
+      } else {
+        await DatabaseHelper.instance.insertExpense(expense);
+      }
+
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      setState(() => _saving = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('保存失败: $e'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppTheme.errorColor,
+        ));
+      }
     }
-
-    if (mounted) Navigator.pop(context, true);
   }
 
   @override

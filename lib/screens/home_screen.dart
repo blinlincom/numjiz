@@ -214,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               crossAxisCount: columns, shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               mainAxisSpacing: 12, crossAxisSpacing: 12,
-                              childAspectRatio: isDesktop ? 2.8 : 2.4,
+                              childAspectRatio: isDesktop ? 2.5 : 1.6,
                               children: _monthStats.entries.toList().asMap().entries.map((entry) {
                                 return TweenAnimationBuilder<double>(
                                   tween: Tween(begin: 0, end: 1),
