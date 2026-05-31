@@ -34,6 +34,10 @@ class DatabaseHelper {
   Future<void> addExpenseType(String type) async => (await _s).addExpenseType(type);
   Future<void> removeExpenseType(String type) async => (await _s).removeExpenseType(type);
 
+  // ===== 司机姓名管理 =====
+  Future<Map<String, String>> getDriverNames() async => (await _s).getDriverNames();
+  Future<void> setDriverName(String plate, String name) async => (await _s).setDriverName(plate, name);
+
   // ===== 记账 CRUD =====
   Future<int> insertExpense(Expense e) async => (await _s).insertExpense(e);
   Future<int> updateExpense(Expense e) async => (await _s).updateExpense(e);

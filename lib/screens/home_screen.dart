@@ -30,6 +30,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final Set<int> _selectedIds = {};
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
+  int _filterTab = 0; // 0=全部, 1=未报账, 2=已报账
+
+  List<Expense> get _filteredExpenses {
+    if (_filterTab == 1) return _expenses.where((e) => !e.reimbursed).toList();
+    if (_filterTab == 2) return _expenses.where((e) => e.reimbursed).toList();
+    return _expenses;
+  }
 
   @override
   void initState() {
@@ -391,9 +398,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                   decoration: BoxDecoration(color: AppTheme.primaryColor.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20)),
-                                  child: Text('${_expenses.length} 笔', style: const TextStyle(fontSize: 13, color: AppTheme.primaryColor, fontWeight: FontWeight.w600)),
+                                  child: Text('${_filteredExpenses.length} 笔', style: const TextStyle(fontSize: 13, color: AppTheme.primaryColor, fontWeight: FontWeight.w600)),
                                 ),
                               ],
+                            ),
+                          ),
+                        ),
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: padding),
+                            child: Container(
+                              height: 38,
+                              margin: const EdgeInsets.only(bottom: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                children: [
+                                  _buildFilterTab(0, '全部'),
+                                  _buildFilterTab(1, '未报账'),
+                                  _buildFilterTab(2, '已报账'),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -403,7 +430,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           SliverPadding(
                             padding: EdgeInsets.symmetric(horizontal: isDesktop ? padding - 16 : 0),
                             sliver: SliverList(delegate: SliverChildBuilderDelegate((context, index) {
-                              final expense = _expenses[index];
+                              final expense = _filteredExpenses[index];
                               return TweenAnimationBuilder<double>(
                                 tween: Tween(begin: 0, end: 1),
                                 duration: Duration(milliseconds: 300 + index * 50),
@@ -413,7 +440,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     ? _buildSelectableCard(expense)
                                     : ExpenseCard(expense: expense, onTap: () => _navigateToAdd(expense: expense), onDelete: () => _deleteExpense(expense.id!)),
                               );
-                            }, childCount: _expenses.length)),
+                            }, childCount: _filteredExpenses.length)),
                           ),
                         const SliverToBoxAdapter(child: SizedBox(height: 100)),
                       ],
@@ -522,6 +549,39 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         const SizedBox(height: 20),
         PieChartWidget(stats: _monthStats),
       ]),
+    );
+  }
+
+  Widget _buildFilterTab(int index, String label) {
+    final selected = _filterTab == index;
+    final unrepCount = _expenses.where((e) => !e.reimbursed).length;
+    final repCount = _expenses.where((e) => e.reimbursed).length;
+    String displayLabel = label;
+    if (index == 1 && unrepCount > 0) displayLabel = '未报账 $unrepCount';
+    if (index == 2 && repCount > 0) displayLabel = '已报账 $repCount';
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _filterTab = index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            color: selected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: selected ? [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 4, offset: const Offset(0, 1))] : null,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            displayLabel,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              color: selected ? AppTheme.primaryColor : AppTheme.textSecondary,
+            ),
+          ),
+        ),
+      ),
     );
   }
 

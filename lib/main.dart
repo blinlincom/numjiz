@@ -6,6 +6,7 @@ import 'screens/stats_screen.dart';
 import 'screens/plates_screen.dart';
 import 'screens/expense_types_screen.dart';
 import 'screens/daily_report_screen.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'widgets/app_logo.dart';
 import 'utils/responsive.dart';
 
@@ -99,11 +100,22 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late final PageController _pageController;
+  String _version = '';
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _version = 'v${info.version} (${info.buildNumber})';
+      });
+    }
   }
 
   @override
@@ -196,60 +208,74 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 20, offset: const Offset(0, -4))],
         ),
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(0, Icons.home_rounded, Icons.home_outlined, '首页'),
-              _buildNavItem(1, Icons.bar_chart_rounded, Icons.bar_chart, '统计'),
-              GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/daily_report'),
-                behavior: HitTestBehavior.opaque,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.summarize_rounded, color: AppTheme.textSecondary, size: 24),
-                      const SizedBox(height: 2),
-                      Text('日报', style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
-                    ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(0, Icons.home_rounded, Icons.home_outlined, '首页'),
+                  _buildNavItem(1, Icons.bar_chart_rounded, Icons.bar_chart, '统计'),
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/daily_report'),
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.summarize_rounded, color: AppTheme.textSecondary, size: 22),
+                          const SizedBox(height: 2),
+                          Text('日报', style: TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+                        ],
+                      ),
+                    ),
                   ),
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/expense_types'),
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.category_rounded, color: AppTheme.textSecondary, size: 22),
+                          const SizedBox(height: 2),
+                          Text('分类', style: TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/plates'),
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.directions_car_rounded, color: AppTheme.textSecondary, size: 22),
+                          const SizedBox(height: 2),
+                          Text('车牌', style: TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 版本号
+            if (_version.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  _version,
+                  style: TextStyle(fontSize: 10, color: AppTheme.textSecondary.withValues(alpha: 0.5)),
                 ),
               ),
-              GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/expense_types'),
-                behavior: HitTestBehavior.opaque,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.category_rounded, color: AppTheme.textSecondary, size: 24),
-                      const SizedBox(height: 2),
-                      Text('分类', style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
-                    ],
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/plates'),
-                behavior: HitTestBehavior.opaque,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.directions_car_rounded, color: AppTheme.textSecondary, size: 24),
-                      const SizedBox(height: 2),
-                      Text('车牌', style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );

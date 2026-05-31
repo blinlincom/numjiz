@@ -8,6 +8,7 @@ class WebStorageImpl implements StorageInterface {
   List<Expense> _list = [];
   List<String> _plates = [];
   List<String> _expenseTypes = ['充电费', '过路费', '停车费', '货物买赔', '借支'];
+  Map<String, String> _driverNames = {};
 
   @override
   Future<void> init() async {
@@ -31,6 +32,12 @@ class WebStorageImpl implements StorageInterface {
       final t = html.window.localStorage['expense_types'];
       if (t != null && t.isNotEmpty) {
         _expenseTypes = (json.decode(t) as List<dynamic>).cast<String>();
+      }
+    } catch (_) {}
+    try {
+      final d = html.window.localStorage['driver_names'];
+      if (d != null && d.isNotEmpty) {
+        _driverNames = Map<String, String>.from(json.decode(d) as Map);
       }
     } catch (_) {}
   }
@@ -71,6 +78,23 @@ class WebStorageImpl implements StorageInterface {
   @override
   Future<void> removeExpenseType(String type) async {
     _expenseTypes.remove(type); _saveTypes();
+  }
+
+  void _saveDriverNames() {
+    try { html.window.localStorage['driver_names'] = json.encode(_driverNames); } catch (_) {}
+  }
+
+  @override
+  Future<Map<String, String>> getDriverNames() async => Map.from(_driverNames);
+
+  @override
+  Future<void> setDriverName(String plate, String name) async {
+    if (name.isEmpty) {
+      _driverNames.remove(plate);
+    } else {
+      _driverNames[plate] = name;
+    }
+    _saveDriverNames();
   }
 
   @override

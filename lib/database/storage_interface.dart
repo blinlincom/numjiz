@@ -12,6 +12,8 @@ abstract class StorageInterface {
   Future<List<String>> getPlates();
   Future<void> addPlate(String plate);
   Future<void> removePlate(String plate);
+  Future<Map<String, String>> getDriverNames();
+  Future<void> setDriverName(String plate, String name);
   Future<List<String>> getExpenseTypes();
   Future<void> addExpenseType(String type);
   Future<void> removeExpenseType(String type);

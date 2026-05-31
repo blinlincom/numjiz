@@ -14,6 +14,7 @@ class DailyReportScreen extends StatefulWidget {
 class _DailyReportScreenState extends State<DailyReportScreen> {
   DateTime _selectedDate = DateTime.now();
   List<Expense> _expenses = [];
+  Map<String, String> _driverNames = {};
   bool _loading = true;
 
   @override
@@ -26,6 +27,7 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
     setState(() => _loading = true);
     await DatabaseHelper.ensureInit();
     _expenses = await DatabaseHelper.instance.getExpensesByMonth(_selectedDate);
+    _driverNames = await DatabaseHelper.instance.getDriverNames();
     setState(() => _loading = false);
   }
 
@@ -50,43 +52,80 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
   String _buildReportText() {
     if (_today.isEmpty) return '';
     final dateStr = DateFormat('yyyy年M月d日').format(_selectedDate);
-    final weekDay = DateFormat('EEEE').format(_selectedDate);
-    final buf = StringBuffer();
-    buf.writeln('$dateStr $weekDay 收支汇总');
-    buf.writeln('------------------------------');
 
+    // 收集费用类型（借支单独处理）
+    final expenseTypes = <String>{};
+    for (final e in _today) {
+      if (e.type != '借支') expenseTypes.add(e.type);
+    }
+    final hasBorrow = _today.any((e) => e.type == '借支');
+
+    final buf = StringBuffer();
+    buf.writeln(dateStr);
+
+    // 按车牌分组
     final plates = _today.map((e) => e.plateNumber ?? '').where((p) => p.isNotEmpty).toSet();
-    double totalExpense = 0;
-    double totalBorrow = 0;
+    double grandExpense = 0;
+    double grandBorrow = 0;
+    int recordCount = 0;
 
     for (final plate in plates) {
       final pes = _today.where((e) => (e.plateNumber ?? '') == plate).toList();
       if (pes.isEmpty) continue;
-      buf.writeln('【$plate】');
+      recordCount++;
 
-      final Map<String, double> merged = {};
-      for (final e in pes) { merged[e.type] = (merged[e.type] ?? 0) + e.amount; }
+      // 人名
+      final driver = _driverNames[plate] ?? '';
+      buf.writeln('姓名：${driver.isNotEmpty ? driver : '未设置'}');
+      // 车牌
+      buf.writeln('车牌：$plate');
 
-      double plateTotal = 0;
-      for (final e in merged.entries) {
-        if (e.key == '借支') {
-          totalBorrow += e.value;
-          buf.writeln('  借支: ${e.value.toStringAsFixed(2)}');
+      // 合并同类型金额
+      final merged = <String, double>{};
+      double plateBorrow = 0;
+      for (final e in pes) {
+        if (e.type == '借支') {
+          plateBorrow += e.amount;
         } else {
-          plateTotal += e.value;
-          buf.writeln('  ${e.key}: ${e.value.toStringAsFixed(2)}');
+          merged[e.type] = (merged[e.type] ?? 0) + e.amount;
         }
       }
-      if (plateTotal > 0) {
-        buf.writeln('  小计: ${plateTotal.toStringAsFixed(2)}');
-        totalExpense += plateTotal;
+
+      // 列出各项费用
+      double plateExpense = 0;
+      for (final t in expenseTypes) {
+        final v = merged[t] ?? 0;
+        if (v > 0) {
+          buf.writeln('$t：${v.toStringAsFixed(2)}');
+          plateExpense += v;
+        }
       }
+
+      // 费用合计
+      buf.writeln('费用合计：${plateExpense.toStringAsFixed(2)}');
+
+      // 借支
+      if (hasBorrow && plateBorrow > 0) {
+        buf.writeln('借支：${plateBorrow.toStringAsFixed(2)}');
+      }
+
+      // 总计
+      final plateTotal = plateExpense + plateBorrow;
+      buf.writeln('总计：${plateTotal.toStringAsFixed(2)}');
+
+      grandExpense += plateExpense;
+      grandBorrow += plateBorrow;
+
+      if (recordCount < plates.length) buf.writeln();
     }
 
-    buf.writeln('------------------------------');
-    if (totalExpense > 0) buf.writeln('费用合计: ${totalExpense.toStringAsFixed(2)}');
-    if (totalBorrow > 0) buf.writeln('借支合计: ${totalBorrow.toStringAsFixed(2)}');
-    buf.writeln('总计: ${(totalExpense + totalBorrow).toStringAsFixed(2)}');
+    // 多辆车汇总
+    if (plates.length > 1) {
+      buf.writeln('── 当日汇总 ──');
+      if (grandExpense > 0) buf.writeln('费用合计：${grandExpense.toStringAsFixed(2)}');
+      if (grandBorrow > 0) buf.writeln('借支合计：${grandBorrow.toStringAsFixed(2)}');
+      buf.writeln('总记：${(grandExpense + grandBorrow).toStringAsFixed(2)}');
+    }
 
     return buf.toString();
   }

@@ -9,9 +9,11 @@ class NativeStorageImpl implements StorageInterface {
   List<Expense> _list = [];
   List<String> _plates = [];
   List<String> _expenseTypes = ['充电费', '过路费', '停车费', '货物买赔', '借支'];
+  Map<String, String> _driverNames = {};
   File? _dataFile;
   File? _platesFile;
   File? _typesFile;
+  File? _driverNamesFile;
 
   @override
   Future<void> init() async {
@@ -21,6 +23,7 @@ class NativeStorageImpl implements StorageInterface {
     _dataFile = File('$dirPath/cold_chain_expenses.json');
     _platesFile = File('$dirPath/cold_chain_plates.json');
     _typesFile = File('$dirPath/expense_types.json');
+    _driverNamesFile = File('$dirPath/driver_names.json');
 
     // Load expenses
     try {
@@ -61,6 +64,16 @@ class NativeStorageImpl implements StorageInterface {
     } catch (_) {
       // keep defaults
     }
+
+    // Load driver names
+    try {
+      if (await _driverNamesFile!.exists()) {
+        final d = await _driverNamesFile!.readAsString();
+        if (d.isNotEmpty) {
+          _driverNames = Map<String, String>.from(json.decode(d) as Map);
+        }
+      }
+    } catch (_) {}
   }
 
   Future<void> _save() async {
@@ -78,6 +91,12 @@ class NativeStorageImpl implements StorageInterface {
   Future<void> _saveTypes() async {
     if (_typesFile != null) {
       await _typesFile!.writeAsString(json.encode(_expenseTypes));
+    }
+  }
+
+  Future<void> _saveDriverNames() async {
+    if (_driverNamesFile != null) {
+      await _driverNamesFile!.writeAsString(json.encode(_driverNames));
     }
   }
 
@@ -113,6 +132,19 @@ class NativeStorageImpl implements StorageInterface {
   Future<void> removeExpenseType(String type) async {
     _expenseTypes.remove(type);
     await _saveTypes();
+  }
+
+  @override
+  Future<Map<String, String>> getDriverNames() async => Map.from(_driverNames);
+
+  @override
+  Future<void> setDriverName(String plate, String name) async {
+    if (name.isEmpty) {
+      _driverNames.remove(plate);
+    } else {
+      _driverNames[plate] = name;
+    }
+    await _saveDriverNames();
   }
 
   @override
