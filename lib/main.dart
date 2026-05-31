@@ -250,11 +250,9 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                         ],
                       ),
                     ),
-                  ),
                 ],
-              ],
+              ),
             ),
-            // 版本号已移至首页菜单 → 设置
           ],
         ),
       ),
