@@ -32,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   int _filterTab = 0; // 0=全部, 1=未报账, 2=已报账
+  DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
 
   List<Expense> get _filteredExpenses {
     if (_filterTab == 1) return _expenses.where((e) => !e.reimbursed).toList();
@@ -52,9 +53,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<void> _loadData() async {
     setState(() => _loading = true);
-    final now = DateTime.now();
-    _expenses = await DatabaseHelper.instance.getExpensesByMonth(now);
-    _monthStats = await DatabaseHelper.instance.getMonthlyStats(now);
+    _expenses = await DatabaseHelper.instance.getExpensesByMonth(_selectedMonth);
+    _monthStats = await DatabaseHelper.instance.getMonthlyStats(_selectedMonth);
     _totalMonth = _monthStats.values.fold<double>(0, (a, b) => a + b);
     setState(() => _loading = false);
     _fadeController.forward(from: 0);
@@ -308,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final monthName = DateFormat('M月').format(DateTime.now());
+    final monthName = DateFormat('yyyy年M月').format(_selectedMonth);
     final padding = Responsive.horizontalPadding(context);
     final maxWidth = Responsive.contentMaxWidth(context);
     final columns = Responsive.gridColumns(context);
@@ -573,6 +573,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildHeaderCard(String monthName) {
+    final isCurrentMonth = _selectedMonth.year == DateTime.now().year && _selectedMonth.month == DateTime.now().month;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -582,7 +583,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
       child: Column(children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text('$monthName 总支出', style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)),
+          Row(mainAxisSize: MainAxisSize.min, children: [
+            GestureDetector(
+              onTap: () { setState(() { _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1); }); _loadData(); },
+              child: const Icon(Icons.chevron_left_rounded, color: Colors.white70, size: 22),
+            ),
+            GestureDetector(
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: _selectedMonth,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2030),
+                  helpText: '选择月份',
+                );
+                if (picked != null) {
+                  setState(() { _selectedMonth = DateTime(picked.year, picked.month); });
+                  _loadData();
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(monthName, style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)),
+              ),
+            ),
+            GestureDetector(
+              onTap: () { setState(() { _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1); }); _loadData(); },
+              child: Icon(Icons.chevron_right_rounded, color: isCurrentMonth ? Colors.white38 : Colors.white70, size: 22),
+            ),
+          ]),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
