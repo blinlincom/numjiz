@@ -105,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('确认报账', style: TextStyle(fontWeight: FontWeight.w700)),
         content: Text('确定将选中的 ${validIds.length} 笔记录标记为已报账？\n（借支类型不参与报账）'),
         actions: [
@@ -153,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('取消报账', style: TextStyle(fontWeight: FontWeight.w700)),
         content: Text('确定将选中的 ${validIds.length} 笔记录取消报账状态？'),
         actions: [
@@ -207,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.check_circle_rounded, color: AppTheme.successColor, size: 24),
@@ -270,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _importBackup() async {
     final controller = TextEditingController();
     final result = await showDialog<String>(context: context, builder: (ctx) => AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: const Text('导入备份'),
       content: SizedBox(
         width: 400,
@@ -401,7 +401,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 const Text('最近记录', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                  decoration: BoxDecoration(color: AppTheme.primaryColor.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20)),
+                                  decoration: BoxDecoration(color: AppTheme.primaryColor.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(16)),
                                   child: Text('${_filteredExpenses.length} 笔', style: const TextStyle(fontSize: 13, color: AppTheme.primaryColor, fontWeight: FontWeight.w600)),
                                 ),
                               ],
@@ -578,8 +578,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: AppTheme.headerGradient,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [BoxShadow(color: AppTheme.primaryColor.withValues(alpha: 0.3), blurRadius: 24, offset: const Offset(0, 12))],
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: AppTheme.primaryColor.withValues(alpha: 0.15), blurRadius: 12, offset: const Offset(0, 4))],
       ),
       child: Column(children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -614,7 +614,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ]),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(16)),
             child: const Row(mainAxisSize: MainAxisSize.min, children: [
               Icon(Icons.local_shipping_rounded, color: Colors.white70, size: 14), SizedBox(width: 4),
               Text('牛马司机', style: TextStyle(color: Colors.white70, fontSize: 11)),
@@ -626,7 +626,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           tween: Tween(begin: 0, end: _totalMonth),
           duration: const Duration(milliseconds: 800),
           curve: Curves.easeOutCubic,
-          builder: (_, v, __) => Text('¥${v.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.w800, letterSpacing: -1.5)),
+          builder: (_, v, __) => Text('¥${v.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: -1)),
         ),
         const SizedBox(height: 20),
         PieChartWidget(stats: _monthStats),
@@ -675,7 +675,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Column(children: [
         Container(
           width: 72, height: 72,
-          decoration: BoxDecoration(color: AppTheme.primaryLight, borderRadius: BorderRadius.circular(20)),
+          decoration: BoxDecoration(color: AppTheme.primaryLight, borderRadius: BorderRadius.circular(16)),
           child: const Icon(Icons.receipt_long_rounded, size: 36, color: AppTheme.primaryColor),
         ),
         const SizedBox(height: 16),
